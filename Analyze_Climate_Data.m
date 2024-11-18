@@ -100,7 +100,9 @@ end
 % fname = uigetfile(fmask);
 folderpath = cd;
 flist = dir(fullfile(folderpath,string(fmask)));
-fname = flist.name;
+% find newest file
+[~, idx] = sort([flist.datenum], 'descend');
+fname = flist(idx(1)).name;
 % Read entire data file
 str1 = sprintf('Opening Data File:     %s', fname);
 disp(str1);
@@ -138,8 +140,10 @@ end
 BaseStr = NormalTimePeriods(TimeIdx);
 SearchValue = SearchValue + NormalTimePeriod;
 % Read entire normal file
-nlist = dir(fullfile(folderpath,string(fmask)));
-nname = nlist.name;
+nlist = dir(fullfile(folderpath,string(nmask)));
+% find newest file
+[~, idx] = sort([nlist.datenum], 'descend');
+nname = nlist(idx(1)).name;
 % nname = uigetfile(nmask);
 str2 = sprintf('Opening Baseline File: %s', nname);
 disp(str2);
@@ -155,8 +159,7 @@ for y = 1:TotalRows
     Data.Anomaly(y,:) = Data.Values(y,:) - Data.NormBaseline(1,:);
 end
 %%
-% Use missing data code to set start and end rows for temperature
-% data. Only check first and last rows, others should be complete
+% Use missing data code to set last valid column in final row. 
 LastFullRow = TotalRows;
 LastRowSize = 0;
 for m = 1:12
@@ -212,6 +215,7 @@ for m = 1:12
     plot(Data.Year(i1:i2),Data.ValuesFiltered(i1:i2,m),'-b','LineWidth',2);
     yline(Data.NormBaseline(m));
     grid on;
+    axis tight;
     if Element_Code == 1
         lg = legend('Mean Precip','5 Year Mean','Location','best');
         lg.Title.String = BaseStr;
@@ -251,6 +255,7 @@ for m = 1:12
     plot(Data.Year(i1:i2),Data.AnomalyFiltered(i1:i2,m),'-b','LineWidth',2);
     yline(0);
     grid on;
+    axis tight;
     if Element_Code == 1
         if File_Code == 1
             Tstr = sprintf('Ottawa County Precipitation Anomaly for %s', Mstr(m));
@@ -302,6 +307,7 @@ plot(Data.Values(TotalRows,1:LastRowSize) - Data.MonthlyAverageValues(1:LastRowS
 % Set x-axis labels to month names
 set(gca, 'xtick', 1:12, 'xticklabel', {'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'});
 grid on;
+axis tight;
 ylabel('Temperature Degrees F');
 xlabel('Month');
 title(TMstr);
@@ -318,6 +324,7 @@ hold on;
 plot(Data.Year(1:i),Data.CombinedMonthsFiltered(1:i),'-b','LineWidth',2);
 yline(0);
 grid on;
+axis tight;
 if Element_Code == 1
     if File_Code == 1
         Tstr = sprintf('Ottawa County Yearly Precipitation Anomaly');
